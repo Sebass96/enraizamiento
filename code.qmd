@@ -1,0 +1,741 @@
+---
+title: "Enraizamiento de estaquillas de Eucalyptus grandis × urophylla en invernadero, aplicando ácido indolbutírico, Satipo, Perú"
+format:
+  html:
+    toc: true
+    toc-location: left
+    number-sections: true
+    self-contained: true
+    output-file: "ESM_1"
+editor_options: 
+  chunk_output_type: console
+execute: 
+  warning: false
+  echo: true
+---
+
+# Project Setup
+
+Install *inti* development version.
+
+```{r}
+#| eval: false
+
+if (!require("remotes"))
+  install.packages("remotes")
+remotes::install_github("flavjack/inti")
+```
+
+```{r}
+#| label:  setup
+
+library(emmeans)
+library(multcomp)
+library(FSA)
+library(corrplot)
+source('https://inkaverse.com/setup.r')
+
+cat("Project: ", getwd(), "\n")
+session_info()
+```
+
+# Import data
+
+Data were imported from the field book evaluated during the 2017-2019 growing seasons. The evaluations focused on the agronomic traits and fruit biometrics of the mango crop.
+
+```{r}
+url <- "https://docs.google.com/spreadsheets/d/15-PRXNgdVA0oG6L38PiJswQIOmAeEiDButT7UhuZDQA/edit?gid=904480992#gid=904480992"
+
+gs <- url %>% 
+  as_sheets_id()
+
+enraizamiento <- gs %>% 
+  range_read("enraizamiento") %>% 
+  mutate_at("tratamiento", as.factor)
+
+glimpse(enraizamiento)
+
+desarrollo <- gs %>% 
+  range_read("desarrollo") %>% 
+  mutate_at("tratamiento", as.factor)
+
+glimpse(desarrollo)
+
+```
+
+```{r}
+enraizamiento %>% kable(caption = "Enraizamiento de estaquillas de eucalipto", align = 'c')
+
+desarrollo %>% kable(caption = "Desarrollo radicular de estaquillas de eucalipto", align = 'c')
+```
+
+# Data summary
+
+Summary of the number of data points recorded for each treatment and evaluated variable.
+
+```{r}
+sm <- enraizamiento %>% 
+  group_by(tratamiento) %>%
+  summarise(enraizamiento = n())
+
+sm
+
+sm <- desarrollo %>% 
+  group_by(tratamiento) %>% 
+  summarise(across(numero_raices:peso_raices, ~ sum(!is.na(.))))
+
+sm
+```
+
+# Objetives
+
+Evaluate the effect of the rootstock-interstock interaction on the agronomic traits and fruit biometrics of the mango crop in the San Lorenzo Valley.
+
+## Specific Objective 1
+
+Determine the effect of the rootstock-interstock interaction on the agronomic characteristics of mango.
+
+### Plant height
+
+```{r}
+trait <- "height"
+
+lmm <- paste({{trait}}, "~ 1 + (1|block) + stock*edge") %>% as.formula()
+
+lmd <- paste({{trait}}, "~ block + stock*edge") %>% as.formula()
+
+rmout <- rdt %>% 
+  remove_outliers(formula = lmm
+                  , drop_na = T, plot_diag = T)
+
+rmout$diagplot
+
+rmout$outliers
+
+model <- rmout$data$clean %>% 
+  aov(formula = lmd, .)
+
+anova(model)
+
+mc <- emmeans(model, ~ edge|stock) %>%
+  cld(Letters = letters, reversed = F) %>%
+  mutate(across(.group, trimws)) %>% 
+  rename(group = ".group")
+
+mc %>% kable()
+
+p1a <- mc %>% 
+  plot_smr(x = "stock"
+           , y = "emmean"
+           , group = "edge"
+           , sig = "group"
+           , error = "SE"
+           , color = T
+           , xlab = "Rootstock"
+           , ylab = "Plant height (m)"
+           , glab = "Interstock"
+           , ylimits = c(0, 6, 2)
+           , 
+           )
+
+p1a
+```
+
+### Sproud
+
+```{r}
+trait <- "sproud"
+
+lmm <- paste({{trait}}, "~ 1 + (1|block) + stock*edge") %>% as.formula()
+
+lmd <- paste({{trait}}, "~ block + stock*edge") %>% as.formula()
+
+rmout <- rdt %>% 
+  remove_outliers(formula = lmm
+                  , drop_na = T, plot_diag = T)
+
+rmout$diagplot
+
+rmout$outliers
+
+model <- rmout$data$clean %>% 
+  aov(formula = lmd, .)
+
+anova(model)
+
+mc <- emmeans(model, ~ edge|stock) %>%
+  cld(Letters = letters, reversed = T) %>%
+  mutate(across(.group, trimws)) %>% 
+  rename(group = ".group")
+
+mc %>% kable()
+
+p1b <- mc %>% 
+  plot_smr(x = "stock"
+           , y = "emmean"
+           , group = "edge"
+           , sig = "group"
+           , error = "SE"
+           , color = T
+           , xlab = "Rootstock"
+           , ylab = "Sproud ('%')"
+           , glab = "Interstock"
+           , ylimits = c(0, 100, 20)
+           )
+
+p1b 
+```
+
+### Number of fruits
+
+```{r}
+trait <- "n_fruits"
+
+lmm <- paste({{trait}}, "~ 1 + (1|block) + year + stock*edge + (1 + year|treat)") %>% as.formula()
+
+lmd <- paste({{trait}}, "~ block + year + stock*edge") %>% as.formula()
+
+rmout <- rdt %>% 
+  remove_outliers(formula = lmm
+                  , drop_na = T, plot_diag = T)
+
+rmout$diagplot
+
+rmout$outliers
+
+model <- rmout$data$clean %>% 
+  aov(formula = lmd, .)
+
+anova(model)
+
+mc <- emmeans(model, ~ year|edge|stock) %>%
+  cld(Letters = letters, reversed = T) %>%
+  mutate(across(.group, trimws)) %>% 
+  rename(group = ".group")
+
+mc %>% kable()
+
+p1c <- mc %>% 
+  plot_smr(type = "bar"
+           , x = "year"
+           , y = "emmean"
+           , group = "edge"
+           , sig = "group"
+           , error = "SE"
+           , color = T
+           , xlab = "Year"
+           , ylab = "Fruits number"
+           , glab = "Interstock"
+           , ylimits = c(0, 320, 60)
+           ) +
+  facet_wrap(. ~ stock, nrow = 2)
+
+p1c 
+```
+
+### Flowering
+
+```{r}
+trait <- "flowering"
+
+lmm <- paste({{trait}}, "~ 1 + (1|block) + year + stock*edge + (1 + year|treat)") %>% as.formula()
+
+lmd <- paste({{trait}}, "~ block + year + stock*edge") %>% as.formula()
+
+rmout <- rdt %>% 
+  remove_outliers(formula = lmm
+                  , drop_na = T, plot_diag = T)
+
+rmout$diagplot
+
+rmout$outliers
+
+model <- rmout$data$clean %>% 
+  aov(formula = lmd, .)
+
+anova(model)
+
+mc <- emmeans(model, ~ year|edge|stock) %>%
+  cld(Letters = letters, reversed = T) %>%
+  mutate(across(.group, trimws)) %>% 
+  rename(group = ".group")
+
+mc %>% kable()
+
+p1d <- mc %>% 
+  plot_smr(type = "bar"
+           , x = "year"
+           , y = "emmean"
+           , group = "edge"
+           , sig = "group"
+           , error = "SE"
+           , color = T
+           , xlab = "Year"
+           , ylab = "Flowering ('%')"
+           , glab = "Interstock"
+           , ylimits = c(0, 120, 20)
+           ) +
+  facet_wrap(. ~ stock, nrow = 2)
+
+p1d
+```
+
+### Figure 3
+
+Univariate analysis of the variables that determine the agronomic characteristics of mango.
+
+```{r}
+legend <- cowplot::get_plot_component(p1a, 'guide-box-top', return_all = TRUE)
+
+p1 <- list(p1a + theme(legend.position="none")
+           , p1b + theme(legend.position="none")
+           , p1c + theme(legend.position="none")
+           , p1d + theme(legend.position="none")
+           ) %>% 
+  plot_grid(plotlist = ., ncol = 2
+            , labels = "auto"
+            , rel_heights = c(1, 2)
+            ) 
+
+fig <- plot_grid(legend, p1, ncol = 1, align = 'v', rel_heights = c(0.05, 1))
+
+fig %>% 
+  ggsave2(plot = ., "submission/Figure_3.jpg"
+         , units = "cm"
+         , width = 24
+         , height = 16
+         )
+
+fig %>% 
+  ggsave2(plot = ., "submission/Figure_3.eps"
+         , units = "cm"
+         , width = 24
+         , height = 16
+         )
+
+knitr::include_graphics("submission/Figure_3.jpg")
+```
+
+### Multivariate
+
+Principal Component Analysis (PCA) of agronomic traits in the mango crop based on the use of rootstock-interstock combinations.
+
+```{r}
+mv <- rdt %>% 
+  group_by(stock, edge) %>% 
+  summarise(across(where(is.numeric), ~ mean(., na.rm = T))) %>%   
+  unite("treat", stock:edge, sep = "-") %>% 
+   rename(Treat = treat
+         , Height = height
+         , Fruits = n_fruits
+         , Flowering = flowering
+         , Sproud = sproud)
+  
+pca <- mv %>% 
+  PCA(scale.unit = T, quali.sup = 1, graph = F) 
+
+# summary
+
+summary(pca, nbelements = Inf, nb.dec = 2)
+
+f2a <- plot.PCA(x = pca, choix = "var"
+                , cex=0.8
+                , label = "var"
+                )
+
+f2b <- plot.PCA(x = pca, choix = "ind"
+                , habillage = 1
+                , invisible = c("ind")
+                , cex=0.8
+                ) 
+```
+
+### Figure 4
+
+Principal Component Analysis (PCA).
+
+```{r}
+fig <- list(f2a, f2b) %>% 
+  plot_grid(plotlist = ., ncol = 2, nrow = 1
+            , labels = "auto"
+            , rel_widths = c(1, 1.5)
+            ) 
+fig %>% 
+  ggsave2(plot = ., "submission/Figure_4.jpg", units = "cm"
+          , width = 25, height = 10
+          ) 
+
+fig %>% 
+  ggsave2(plot = ., "submission/Figure_4.eps", units = "cm"
+          , width = 25, height = 10
+          ) 
+
+knitr::include_graphics("submission/Figure_4.jpg")
+```
+
+### Supplementary Figure 1
+
+Results of the contributions and correlation of the variables in the Principal Component Analysis (PCA).
+
+```{r}
+var <- get_pca_var(pca)
+
+pt1 <- fviz_eig(pca, 
+                addlabels=TRUE,
+                hjust = 0.05,
+                barfill="white",
+                barcolor ="darkblue",
+                linecolor ="red") + 
+  ylim(0, 80) + 
+  labs(
+    title = "PCA - percentage of explained variances",
+    y = "Variance (%)") +
+  theme_minimal()
+
+pt2 <- fviz_contrib(pca,
+                     choice = "var", 
+                     axes = 1, 
+                     top = 10,
+                     fill="white",
+                     color ="darkblue",
+                     sort.val = "desc") +
+  ylim(0, 50) + 
+  labs(title = "Dim 1 - variables contribution") 
+
+pt3 <- fviz_contrib(pca,
+                     choice = "var", 
+                     axes = 2, 
+                     top = 10,
+                     fill="white",
+                     color ="darkblue",
+                     sort.val = "desc") +
+  ylim(0, 80) + 
+  labs(title = "Dim 2 - variables contribution") 
+
+pt4 <- ~ {
+  
+  corrplot(var$cor, 
+         method="number",
+         tl.col="black", 
+         tl.srt=45,
+         )
+  
+}
+
+plot <- list(pt1, pt2, pt3) %>% 
+  plot_grid(plotlist = ., ncol = 1, labels = "auto") %>% 
+  list(., pt4) %>% 
+  plot_grid(plotlist = ., ncol = 2, labels = c("", "d"))
+
+
+ggsave2(plot = plot, "submission/FigS1.jpg", height = 20, width = 28, units = "cm")
+
+ggsave2(plot = plot, "submission/FigS1.eps", height = 20, width = 28, units = "cm")
+
+knitr::include_graphics("submission/FigS1.jpg")
+```
+
+## Specific Objective 2
+
+Determine the effect of the rootstock-interstock interaction on the fruit biometrics of mango.
+
+### Fruit Weigth
+
+```{r}
+trait <- "weigth"
+
+lmm <- paste({{trait}}, "~ 1 + (1|block) + stock*edge") %>% as.formula()
+
+lmd <- paste({{trait}}, "~ block + stock*edge") %>% as.formula()
+
+rmout <- fru %>% 
+  remove_outliers(formula = lmm
+                  , drop_na = T, plot_diag = T)
+
+rmout$diagplot
+
+rmout$outliers
+
+model <- rmout$data$clean %>% 
+  aov(formula = lmd, .)
+
+anova(model)
+
+mc <- emmeans(model, ~ edge|stock) %>%
+  cld(Letters = letters, reversed = T) %>%
+  mutate(across(.group, trimws)) %>% 
+  rename(group = ".group")
+
+mc %>% kable()
+
+p2a <- mc %>% 
+  plot_smr(x = "stock"
+           , y = "emmean"
+           , group = "edge"
+           , sig = "group"
+           , error = "SE"
+           , color = T
+           , xlab = "Rootstock"
+           , ylab = "Fruit Weigth (g)"
+           , glab = "Interstock"
+           , ylimits = c(0, 600, 100)
+           , 
+           )
+
+p2a
+```
+
+### Fruit length
+
+```{r}
+trait <- "long"
+
+lmm <- paste({{trait}}, "~ 1 + (1|block) + stock*edge") %>% as.formula()
+
+lmd <- paste({{trait}}, "~ block + stock*edge") %>% as.formula()
+
+rmout <- fru %>% 
+  remove_outliers(formula = lmm
+                  , drop_na = T, plot_diag = T)
+
+rmout$diagplot
+
+rmout$outliers
+
+model <- rmout$data$clean %>% 
+  aov(formula = lmd, .)
+
+anova(model)
+
+mc <- emmeans(model, ~ edge|stock) %>%
+  cld(Letters = letters, reversed = T) %>%
+  mutate(across(.group, trimws)) %>% 
+  rename(group = ".group")
+
+mc %>% kable()
+
+p2b <- mc %>% 
+  plot_smr(x = "stock"
+           , y = "emmean"
+           , group = "edge"
+           , sig = "group"
+           , error = "SE"
+           , color = T
+           , xlab = "Rootstock"
+           , ylab = "Fruit length (mm)"
+           , glab = "Interstock"
+           , ylimits = c(0, 120, 20)
+           , 
+           )
+
+p2b
+```
+
+### Fruit diameter
+
+```{r}
+trait <- "diameter_average"
+
+lmm <- paste({{trait}}, "~ 1 + (1|block) + stock*edge") %>% as.formula()
+
+lmd <- paste({{trait}}, "~ block + stock*edge") %>% as.formula()
+
+rmout <- fru %>% 
+  remove_outliers(formula = lmm
+                  , drop_na = T, plot_diag = T)
+
+rmout$diagplot
+
+rmout$outliers
+
+model <- rmout$data$clean %>% 
+  aov(formula = lmd, .)
+
+anova(model)
+
+mc <- emmeans(model, ~ edge|stock) %>%
+  cld(Letters = letters, reversed = T) %>%
+  mutate(across(.group, trimws)) %>% 
+  rename(group = ".group")
+
+mc %>% kable()
+
+p2c <- mc %>% 
+  plot_smr(x = "stock"
+           , y = "emmean"
+           , group = "edge"
+           , sig = "group"
+           , error = "SE"
+           , color = T
+           , xlab = "Rootstock"
+           , ylab = "Fruit diameter (mm)"
+           , glab = "Interstock"
+           , ylimits = c(0, 100, 20)
+           , 
+           )
+
+p2c
+```
+
+### Table 2
+
+Descriptive statistics of the variables that determine the fruit biometrics of mango.
+
+```{r}
+
+sts <- Summarize(weigth  ~ stock*edge, data = fru, digits = 2, na.rm = TRUE)
+
+tb1a <- sts%>% 
+  merge(., mc) %>% 
+  mutate(Variable = "Fruit Weigth (g)") %>% 
+  dplyr::select(Variable, stock, edge, mean, sd, min, max, group) %>% 
+  rename(Rootstock = stock,
+         Interstock = edge,
+         Sig = group)
+
+sts <- Summarize(long  ~ stock*edge, data = fru, digits = 2, na.rm = TRUE)
+
+tb1b <- sts%>% 
+  merge(., mc) %>% 
+  mutate(Variable = "Fruit length (mm)") %>% 
+  dplyr::select(Variable, stock, edge, mean, sd, min, max, group) %>% 
+  rename(Rootstock = stock,
+         Interstock = edge,
+         Sig = group)
+
+sts <- Summarize(diameter_average ~ stock*edge, data = fru, digits = 2, na.rm = TRUE)
+
+tb1c <- sts%>% 
+  merge(., mc) %>% 
+  mutate(Variable = "Fruit diameter (mm)") %>% 
+  dplyr::select(Variable, stock, edge, mean, sd, min, max, group) %>% 
+  rename(Rootstock = stock,
+         Interstock = edge,
+         Sig = group)
+
+tb1 <- bind_rows(tb1a, tb1b, tb1c)
+
+tb1 %>% kable(align = 'c')
+
+tb1 %>%
+  write_sheet(ss = gs, sheet = "tb1")
+```
+
+### Multivariate
+
+Principal Component Analysis (PCA) of fruit biometrics in the mango crop based on the use of rootstock-interstock combinations.
+
+```{r}
+mv <- fru %>% 
+  group_by(stock, edge) %>% 
+  summarise(across(where(is.numeric), ~ mean(., na.rm = T))) %>%
+  dplyr::select(!c(diameter_1, diameter_2, n_fruits)) %>%
+  unite("treat", stock:edge, sep = "-") %>% 
+   rename(Treat = treat
+         , Weight = weigth
+         , Length = long
+         , Diameter = diameter_average)
+  
+pca <- mv %>% 
+  PCA(scale.unit = T, quali.sup = 1, graph = F) 
+
+# summary
+
+summary(pca, nbelements = Inf, nb.dec = 2)
+
+f3a <- plot.PCA(x = pca, choix = "var"
+                , cex=0.8
+                )
+
+f3b <- plot.PCA(x = pca, choix = "ind"
+                , habillage = 1
+                , invisible = c("ind")
+                , cex=0.8
+                ) 
+```
+
+### Figure 5
+
+Principal Component Analysis (PCA).
+
+```{r}
+fig <- list(f3a, f3b) %>% 
+  plot_grid(plotlist = ., ncol = 2, nrow = 1
+            , labels = "auto"
+            , rel_widths = c(1, 1.5)
+            ) 
+fig %>% 
+  ggsave2(plot = ., "submission/Figure_5.jpg", units = "cm"
+          , width = 25, height = 10
+          ) 
+
+fig %>% 
+  ggsave2(plot = ., "submission/Figure_5.eps", units = "cm"
+          , width = 25, height = 10
+          ) 
+
+knitr::include_graphics("submission/Figure_5.jpg")
+```
+
+### Supplementary Figure 2
+
+Results of the contributions and correlation of the variables in the Principal Component Analysis (PCA).
+
+```{r}
+var <- get_pca_var(pca)
+
+pt1 <- fviz_eig(pca, 
+                addlabels=TRUE,
+                hjust = 0.05,
+                barfill="white",
+                barcolor ="darkblue",
+                linecolor = "white") + 
+  ylim(0, 80) + 
+  labs(
+    title = "PCA - percentage of explained variances",
+    y = "Variance (%)") +
+  theme_minimal()
+
+pt2 <- fviz_contrib(pca,
+                     choice = "var", 
+                     axes = 1, 
+                     top = 10,
+                     fill="white",
+                     color ="darkblue",
+                     sort.val = "desc") +
+  ylim(0, 60) + 
+  labs(title = "Dim 1 - variables contribution") 
+
+pt3 <- fviz_contrib(pca,
+                     choice = "var", 
+                     axes = 2, 
+                     top = 10,
+                     fill="white",
+                     color ="darkblue",
+                     sort.val = "desc") +
+  ylim(0, 100) + 
+  labs(title = "Dim 2 - variables contribution") 
+
+pt4 <- ~ {
+  
+  corrplot(var$cor, 
+         method="number",
+         tl.col="black", 
+         tl.srt=45,
+         )
+  
+}
+
+plot <- list(pt1, pt2, pt3) %>% 
+  plot_grid(plotlist = ., ncol = 1, labels = "auto") %>% 
+  list(., pt4) %>% 
+  plot_grid(plotlist = ., ncol = 2, labels = c("", "d"))
+
+
+ggsave2(plot = plot, "submission/FigS2.jpg", height = 20, width = 30, units = "cm")
+
+ggsave2(plot = plot, "submission/FigS2.eps", height = 20, width = 30, units = "cm")
+
+knitr::include_graphics("submission/FigS2.jpg")
+```
+
