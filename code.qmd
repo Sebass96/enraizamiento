@@ -33,6 +33,7 @@ library(emmeans)
 library(multcomp)
 library(FSA)
 library(corrplot)
+library(ggthemes)
 source('https://inkaverse.com/setup.r')
 
 cat("Project: ", getwd(), "\n")
@@ -51,6 +52,7 @@ gs <- url %>%
 
 enraizamiento <- gs %>% 
   range_read("enraizamiento") %>% 
+  mutate(condicion = ifelse(enraizamiento == "Enraizada", 1, 2)) %>% 
   mutate_at("tratamiento", as.factor)
 
 glimpse(enraizamiento)
@@ -75,8 +77,10 @@ Summary of the number of data points recorded for each treatment and evaluated v
 
 ```{r}
 sm <- enraizamiento %>% 
-  group_by(tratamiento) %>%
-  summarise(enraizamiento = n())
+  group_by(tratamiento, enraizamiento) %>%
+  summarise(cantidad = n()) %>%
+  pivot_wider(names_from = enraizamiento, values_from = cantidad, values_fill = 0) %>% 
+  select(-`NA`)
 
 sm
 
@@ -95,50 +99,21 @@ Evaluate the effect of the rootstock-interstock interaction on the agronomic tra
 
 Determine the effect of the rootstock-interstock interaction on the agronomic characteristics of mango.
 
-### Plant height
+### Enraizamiento
 
 ```{r}
-trait <- "height"
 
-lmm <- paste({{trait}}, "~ 1 + (1|block) + stock*edge") %>% as.formula()
-
-lmd <- paste({{trait}}, "~ block + stock*edge") %>% as.formula()
-
-rmout <- rdt %>% 
-  remove_outliers(formula = lmm
-                  , drop_na = T, plot_diag = T)
-
-rmout$diagplot
-
-rmout$outliers
-
-model <- rmout$data$clean %>% 
-  aov(formula = lmd, .)
-
-anova(model)
-
-mc <- emmeans(model, ~ edge|stock) %>%
-  cld(Letters = letters, reversed = F) %>%
-  mutate(across(.group, trimws)) %>% 
-  rename(group = ".group")
-
-mc %>% kable()
-
-p1a <- mc %>% 
-  plot_smr(x = "stock"
-           , y = "emmean"
-           , group = "edge"
-           , sig = "group"
-           , error = "SE"
-           , color = T
-           , xlab = "Rootstock"
-           , ylab = "Plant height (m)"
-           , glab = "Interstock"
-           , ylimits = c(0, 6, 2)
-           , 
-           )
-
-p1a
+ggplot(enraizamiento, aes(x = tratamiento, y = condicion, color = condicion)) +
+  geom_bar()
+  geom_col(position = "dodge", fill = "white", size = 0.7 )+
+  labs(x = "Tratamientos", y= "Porcentaje (%)") +
+  theme_minimal()+
+  labs(color = "Característica")+
+  theme(axis.title.x = element_text(color = "black", size = 12), 
+        axis.title.y = element_text(color = "black", size = 12))+
+  geom_text(aes(label = paste0(percent, "%")), vjust= 1.5, position = position_dodge(0.9))+
+  scale_color_manual(values = c("gree n4", "black"), labels = c("Enraizada", "Muerta"))
+ 
 ```
 
 ### Sproud
