@@ -145,6 +145,10 @@ fig %>%
 knitr::include_graphics("submission/Figure_2.jpg")
 ```
 
+## Specific Objective 2
+
+Determine the effect of the rootstock-interstock interaction on the agronomic characteristics of mango.
+
 ### Numero de raices
 
 ```{r}
@@ -167,6 +171,37 @@ kruskal_result <- kruskal(numero_raices, tratamiento, group = TRUE, p.adj = "non
 
 kruskal_result
 
+Kruskal_groups <- kruskal_result$groups %>% 
+  rownames_to_column("tratamientos") %>% 
+  arrange(tratamientos)
+
+Kruskal_groups <- kruskal_result$groups %>% 
+  rownames_to_column("tratamientos") %>% 
+  arrange(tratamientos)
+
+Kruskal_means <- kruskal_result$means %>% 
+  rownames_to_column("tratamientos") %>% 
+  arrange(tratamientos)
+
+```
+
+### Tabla 1
+
+```{r}
+tab <- left_join(Kruskal_means,Kruskal_groups, by = "tratamientos") %>% 
+  select(tratamientos, numero_raices.x, std, Min, Max, rank, groups) %>% 
+  mutate_if(is.numeric, round, 3) %>% 
+   unite("rank", c(rank, "groups"), remove = F, sep = " ") %>% 
+  select(-groups) %>% 
+  rename(Tratamientos = tratamientos
+         ,media = numero_raices.x
+         ,min = Min
+         ,max = Max
+         ,rango = rank)
+ 
+tab %>% kable(align = 'c')
+
+tab %>% sheet_write(data = ., gs, "number_roots")
 ```
 
 ### Longitud de raices
