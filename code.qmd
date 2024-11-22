@@ -52,7 +52,7 @@ gs <- url %>%
 
 enraizamiento <- gs %>% 
   range_read("enraizamiento") %>% 
-  mutate(condicion = ifelse(enraizamiento == "Enraizada", 1, 2)) %>% 
+  mutate(condicion = ifelse(enraizamiento == "Enraizada", 1, 3)) %>% 
   mutate_at("tratamiento", as.factor) %>% 
   mutate_at("condicion", as.factor) %>% 
   filter(!is.na(enraizamiento), !is.na(condicion))
