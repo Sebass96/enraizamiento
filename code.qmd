@@ -52,10 +52,11 @@ gs <- url %>%
 
 enraizamiento <- gs %>% 
   range_read("enraizamiento") %>% 
-  mutate(condicion = ifelse(enraizamiento == "Enraizada", 1, 3)) %>% 
+  # mutate(condicion = ifelse(enraizamiento == "Enraizada", 1, 3)) %>% 
   mutate_at("tratamiento", as.factor) %>% 
-  mutate_at("condicion", as.factor) %>% 
-  filter(!is.na(enraizamiento), !is.na(condicion))
+  mutate_at("enraizamiento", as.factor)
+  # mutate_at("condicion", as.factor) %>% 
+  # filter(!is.na(enraizamiento), !is.na(condicion))
 
 glimpse(enraizamiento)
 
@@ -111,18 +112,18 @@ enraizamiento %>%
 
 fig <- enraizamiento %>% 
    group_by(tratamiento) %>% 
-  count(condicion) %>% 
-  mutate(percent = round(n*100/90),0) %>% 
-  ggplot(aes(x = tratamiento, y = percent, fill = condicion)) +
+  count(enraizamiento) %>% 
+  mutate(percent = round((n*100/90),0)) %>% 
+  ggplot(aes(x = tratamiento, y = percent, fill = enraizamiento)) +
   geom_col(position = "dodge", size = 0.7 ) +
-  scale_fill_grey(labels = c("Enraizada", "Muerta"), start = 0.8, end = 0.2) +
-  scale_x_discrete(labels = c("T0" = "Testigo", "T1" = "1000 ppm", "T2" = "1500 ppm", 
-                              "T3" = "2000 ppm", "T4" = "Comercial")) +
+  scale_fill_grey(labels = c("Con Callo","Enraizada","Muerta"), start = 0.8, end = 0.2) +
+  scale_x_discrete(labels = c("T0" = "T0:0 ppm", "T1" = "T1:1000 ppm", "T2" = "T2:1500 ppm", 
+                              "T3" = "T3:2000 ppm", "T4" = "T4: Comercial")) +
   scale_y_continuous(limits = c(0,80)) +
   labs(x = "Tratamiento", y= "Longitud de raíces (cm)")+
   labs(x = "Tratamientos", y= "Porcentaje (%)") +
   theme_minimal() +
-  labs(fill = "Condicion") +
+  labs(fill = "Estaquilla") +
   theme(axis.title.x = element_text(color = "black", size = 12),
         axis.title.y = element_text(color = "black", size = 12))+
   geom_text(aes(label = paste0(percent, "%")), vjust= -0.5, position = position_dodge(0.9)) +
@@ -194,10 +195,11 @@ tab <- left_join(Kruskal_means,Kruskal_groups, by = "tratamientos") %>%
    unite("rank", c(rank, "groups"), remove = F, sep = " ") %>% 
   select(-groups) %>% 
   rename(Tratamientos = tratamientos
-         ,media = numero_raices.x
-         ,min = Min
-         ,max = Max
-         ,rango = rank)
+         ,Media = numero_raices.x
+         ,Mínimo = Min
+         ,Máximo = Max
+         ,Rango = rank
+         ,Desviación = std)
  
 tab %>% kable(align = 'c')
 
