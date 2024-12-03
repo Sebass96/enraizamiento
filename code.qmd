@@ -224,6 +224,13 @@ shapiro.test(ri)
 
 kruskal_result <- kruskal(longitud_raices, tratamiento, group = TRUE, p.adj = "none")
 
+kruskal.test(longitud_raices ~ tratamiento, data = desarrollo)
+
+pairwise.wilcox.test(x = longitud_raices, g = tratamiento, p.adjust.method = "bonferroni")
+
+comparison <- with(desarrollo,kruskal(longitud_raices,tratamiento,group=TRUE, main="desarrollo"))
+comparison <- with(desarrollo,kruskal(longitud_raices,tratamiento,p.adj="bon",group=FALSE, main="desarrollo"))
+
 kruskal_result
 
 Kruskal <- kruskal_result$groups %>% 
