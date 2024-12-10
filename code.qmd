@@ -121,7 +121,7 @@ fig <- enraizamiento %>%
                               "T3" = "T3:2000 ppm", "T4" = "T4: Comercial")) +
   scale_y_continuous(limits = c(0,80)) +
   labs(x = "Tratamiento", y= "Longitud de raíces (cm)")+
-  labs(x = "Tratamientos", y= "Porcentaje (%)") +
+  labs(x = "Tratamiento", y= "Porcentaje (%)") +
   theme_minimal() +
   labs(fill = "Estaquilla") +
   theme(axis.title.x = element_text(color = "black", size = 12),
@@ -245,9 +245,11 @@ fig <- ggplot(desarrollo, aes(x = tratamiento, y = longitud_raices, fill = trata
   scale_x_discrete(labels = c("T0" = "Testigo", "T1" = "1000 ppm", "T2" = "1500 ppm", 
                               "T3" = "2000 ppm", "T4" = "Comercial")) +
   labs(x = "Tratamiento", y= "Longitud de raíces (cm)")+
-  theme_minimal()+
-  theme(axis.title.x = element_text(color = "black", size = 11), 
-        axis.title.y = element_text(color = "black", size = 11)) +
+   scale_x_discrete(labels = c("T0" = "T0:0 ppm", "T1" = "T1:1000 ppm", "T2" = "T2:1500 ppm", 
+                              "T3" = "T3:2000 ppm", "T4" = "T4: Comercial")) +
+  theme_minimal() +
+  theme(axis.title.x = element_text(color = "black", size = 12), 
+        axis.title.y = element_text(color = "black", size = 12)) +
   annotate(geom = "text", x = c(1,2,3,4,5), y = c(6.5,13.5,22.5,17.5,18),
            label = c("b","b","ab","ab","a"), size = 3.5) +
   guides(fill = F)
@@ -304,8 +306,8 @@ fig <- desarrollo %>%
                               "T3" = "2000 ppm", "T4" = "Comercial")) +
   labs(x = "Tratamiento", y= "Peso seco de raíces (mg)")+
   theme_minimal() +
-  theme(axis.title.x = element_text(color = "black", size = 11), 
-        axis.title.y = element_text(color = "black", size = 11)) +
+  theme(axis.title.x = element_text(color = "black", size = 12), 
+        axis.title.y = element_text(color = "black", size = 12)) +
   annotate(geom = "text", x = c(1,2,3,4,5), y = c(15,21,30,30,34),
            label = c("a","ab","a","ab","ab"), size = 3.5) +
   guides(fill = F)
