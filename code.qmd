@@ -90,6 +90,13 @@ sm <- desarrollo %>%
   summarise(across(numero_raices:peso_raices, ~ sum(!is.na(.))))
 
 sm
+
+desarrollo %>% 
+  group_by(tratamiento) %>%
+  summarise(max = max(peso_raices), min = min(peso_raices), mean = mean(peso_raices), median = median(peso_raices))
+
+colSums(desarrollo == 0)
+
 ```
 
 # Objetives
@@ -242,8 +249,6 @@ fig <- ggplot(desarrollo, aes(x = tratamiento, y = longitud_raices, fill = trata
                width = 0.25) +
   geom_boxplot(width = 0.5)+
   scale_fill_grey() +
-  scale_x_discrete(labels = c("T0" = "Testigo", "T1" = "1000 ppm", "T2" = "1500 ppm", 
-                              "T3" = "2000 ppm", "T4" = "Comercial")) +
   labs(x = "Tratamiento", y= "Longitud de raíces (cm)")+
    scale_x_discrete(labels = c("T0" = "T0:0 ppm", "T1" = "T1:1000 ppm", "T2" = "T2:1500 ppm", 
                               "T3" = "T3:2000 ppm", "T4" = "T4: Comercial")) +
@@ -287,6 +292,8 @@ shapiro.test(ri)
 
 # Kruskal-Wallis
 
+attach(desarrollo)
+
 kruskal_result <- kruskal(peso_raices, tratamiento, group = TRUE, p.adj = "none")
 
 kruskal_result
@@ -302,9 +309,9 @@ fig <- desarrollo %>%
                width = 0.25) +
   geom_boxplot(width = 0.5)+
   scale_fill_grey() +
-  scale_x_discrete(labels = c("T0" = "Testigo", "T1" = "1000 ppm", "T2" = "1500 ppm", 
-                              "T3" = "2000 ppm", "T4" = "Comercial")) +
   labs(x = "Tratamiento", y= "Peso seco de raíces (mg)")+
+  scale_x_discrete(labels = c("T0" = "T0:0 ppm", "T1" = "T1:1000 ppm", "T2" = "T2:1500 ppm", 
+                              "T3" = "T3:2000 ppm", "T4" = "T4: Comercial")) +
   theme_minimal() +
   theme(axis.title.x = element_text(color = "black", size = 12), 
         axis.title.y = element_text(color = "black", size = 12)) +
