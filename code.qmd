@@ -238,6 +238,9 @@ pairwise.wilcox.test(x = longitud_raices, g = tratamiento, p.adjust.method = "bo
 comparison <- with(desarrollo,kruskal(longitud_raices,tratamiento,group=TRUE, main="desarrollo"))
 comparison <- with(desarrollo,kruskal(longitud_raices,tratamiento,p.adj="bon",group=FALSE, main="desarrollo"))
 
+##SNK test
+SNK.test()
+
 kruskal_result
 
 Kruskal <- kruskal_result$groups %>% 
