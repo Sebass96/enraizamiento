@@ -97,6 +97,9 @@ desarrollo %>%
 
 colSums(desarrollo == 0)
 
+count <- desarrollo %>% 
+  arrange(peso_raices)
+
 ```
 
 # Objetives
@@ -123,16 +126,15 @@ fig <- enraizamiento %>%
   mutate(percent = round((n*100/90),0)) %>% 
   ggplot(aes(x = tratamiento, y = percent, fill = enraizamiento)) +
   geom_col(position = "dodge", size = 0.7 ) +
-  scale_fill_grey(labels = c("Con Callo","Enraizada","Muerta"), start = 0.8, end = 0.2) +
-  scale_x_discrete(labels = c("T0" = "T0:0 ppm", "T1" = "T1:1000 ppm", "T2" = "T2:1500 ppm", 
-                              "T3" = "T3:2000 ppm", "T4" = "T4: Comercial")) +
+  scale_fill_grey(labels = c("Callused","Rooted","Dead"), start = 0.8, end = 0.2) +
+  scale_x_discrete(labels = c("T0" = "0 ppm IBA", "T1" = "1000 ppm IBA", "T2" = "1500 ppm IBA", 
+                              "T3" = "2000 ppm IBA", "T4" = "4000 ppm NNA + 1000 ppm IBA")) +
   scale_y_continuous(limits = c(0,80)) +
-  labs(x = "Tratamiento", y= "Longitud de raíces (cm)")+
-  labs(x = "Tratamiento", y= "Porcentaje (%)") +
+  labs(x = "Treatment", y= "Cuttings percentage (%)") +
   theme_minimal() +
-  labs(fill = "Estaquilla") +
-  theme(axis.title.x = element_text(color = "black", size = 12),
-        axis.title.y = element_text(color = "black", size = 12))+
+  labs(fill = "Cuttings") +
+  # theme(axis.title.x = element_text(color = "black", size = 12),
+  #       axis.title.y = element_text(color = "black", size = 12))+
   geom_text(aes(label = paste0(percent, "%")), vjust= -0.5, position = position_dodge(0.9)) +
   theme(legend.position = "top")
 
