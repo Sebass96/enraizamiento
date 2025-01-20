@@ -163,6 +163,7 @@ Determine the effect of the rootstock-interstock interaction on the agronomic ch
 
 ```{r}
 mod <- lm(numero_raices ~ tratamiento, data = desarrollo)
+anova(mod)
 
 # Residuales Estandarizados
 
@@ -175,23 +176,50 @@ shapiro.test(ri)
 
 # Kruskal-Wallis
 
+# kruskal_result <- kruskal(numero_raices, tratamiento, group = TRUE, p.adj = "none")
+# 
+# kruskal_result
+# 
+# Kruskal_groups <- kruskal_result$groups %>% 
+#   rownames_to_column("tratamientos") %>% 
+#   arrange(tratamientos)
+# 
+# Kruskal_groups <- kruskal_result$groups %>% 
+#   rownames_to_column("tratamientos") %>% 
+#   arrange(tratamientos)
+# 
+# Kruskal_means <- kruskal_result$means %>% 
+#   rownames_to_column("tratamientos") %>% 
+#   arrange(tratamientos)
+
+trait <- "numero_raices"
+
+lmm <- paste({{trait}}, "~ 1 + (1|tratamiento)") %>% as.formula()
+
+lmd <- paste({{trait}}, "~ tratamiento") %>% as.formula()
+
+rmout <- desarrollo %>% 
+  remove_outliers(formula = lmm
+                  , drop_na = T, plot_diag = T)
+
+rmout$diagplot
+
+rmout$outliers
+
+model <- rmout$data$clean %>% 
+  aov(formula = lmd, .)
+
+mode <- aov(mod)
+
+mc <- emmeans(model, ~ tratamiento) %>%
+  cld(Letters = letters, reversed = F) %>%
+  mutate(across(.group, trimws)) %>% 
+  rename(group = ".group")
+
 attach(desarrollo)
+tratamiento
+SNK.test(mode,"tratamiento", console = T)
 
-kruskal_result <- kruskal(numero_raices, tratamiento, group = TRUE, p.adj = "none")
-
-kruskal_result
-
-Kruskal_groups <- kruskal_result$groups %>% 
-  rownames_to_column("tratamientos") %>% 
-  arrange(tratamientos)
-
-Kruskal_groups <- kruskal_result$groups %>% 
-  rownames_to_column("tratamientos") %>% 
-  arrange(tratamientos)
-
-Kruskal_means <- kruskal_result$means %>% 
-  rownames_to_column("tratamientos") %>% 
-  arrange(tratamientos)
 
 ```
 
@@ -219,6 +247,7 @@ tab %>% sheet_write(data = ., gs, "number_roots")
 
 ```{r}
 mod <- lm(longitud_raices ~ tratamiento, data = desarrollo)
+anova(mod)
 
 # Residuales Estandarizados
 
@@ -241,7 +270,38 @@ comparison <- with(desarrollo,kruskal(longitud_raices,tratamiento,group=TRUE, ma
 comparison <- with(desarrollo,kruskal(longitud_raices,tratamiento,p.adj="bon",group=FALSE, main="desarrollo"))
 
 ##SNK test
-SNK.test()
+
+trait <- "longitud_raices"
+
+lmm <- paste({{trait}}, "~ 1 + (1|tratamiento)") %>% as.formula()
+
+lmd <- paste({{trait}}, "~ tratamiento") %>% as.formula()
+
+rmout <- desarrollo %>% 
+  remove_outliers(formula = lmm
+                  , drop_na = T, plot_diag = T)
+
+rmout$diagplot
+
+rmout$outliers
+
+model <- rmout$data$clean %>% 
+  aov(formula = lmd, .)
+
+anova(model)
+
+mode <- aov(mod)
+
+mc <- emmeans(model, ~ tratamiento) %>%
+  cld(Letters = letters, reversed = F) %>%
+  mutate(across(.group, trimws)) %>% 
+  rename(group = ".group")
+
+TukeyHSD(model,conf.level = 0.95)
+SNK.test(model,"tratamiento", console = T)
+duncan.test(model, "tratamiento", group=F)$comparison
+LSD.test(y=model, trt = "tratamiento",group = T, console = T)
+
 
 kruskal_result
 
