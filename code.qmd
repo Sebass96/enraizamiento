@@ -34,6 +34,7 @@ library(FSA)
 library(ggthemes)
 library(agricolae)
 library(multcomp)
+library(car)
 source('https://inkaverse.com/setup.r')
 
 cat("Project: ", getwd(), "\n")
@@ -66,6 +67,10 @@ desarrollo <- gs %>%
 
 glimpse(desarrollo)
 
+desarrollo$peso_raices[desarrollo$peso_raices == 0] <- NA
+
+colSums(is.na(desarrollo))
+
 ```
 
 ```{r}
@@ -93,7 +98,8 @@ sm
 
 desarrollo %>% 
   group_by(tratamiento) %>%
-  summarise(max = max(peso_raices), min = min(peso_raices), mean = mean(peso_raices), median = median(peso_raices))
+  summarise(max = max(peso_raices, na.rm = T), min = min(peso_raices, na.rm = T), 
+            mean = mean(peso_raices, na.rm = T), median = median(peso_raices, na.rm = T))
 
 colSums(desarrollo == 0)
 
@@ -174,6 +180,14 @@ sort(ri)
 
 shapiro.test(ri)
 
+# Test de Barlett (homogeneidad de varianzas)
+
+bartlett.test(numero_raices ~ tratamiento, desarrollo)
+
+# Test de Levene
+
+leveneTest(numero_raices ~ tratamiento, desarrollo)
+
 # Kruskal-Wallis
 
 # kruskal_result <- kruskal(numero_raices, tratamiento, group = TRUE, p.adj = "none")
@@ -216,10 +230,8 @@ mc <- emmeans(model, ~ tratamiento) %>%
   mutate(across(.group, trimws)) %>% 
   rename(group = ".group")
 
-attach(desarrollo)
 tratamiento
 SNK.test(mode,"tratamiento", console = T)
-
 
 ```
 
@@ -257,6 +269,19 @@ sort(ri)
 # Normalidad
 
 shapiro.test(ri)
+
+# Test de Barlett (homogeneidad de varianzas)
+
+bartlett.test(longitud_raices ~ tratamiento, desarrollo)
+
+# Test de Levene
+
+leveneTest(longitud_raices ~ tratamiento, desarrollo)
+
+# Breusch - Pagan Test
+
+library(lmtest)
+bptest(mod)
 
 # Kruskal-Wallis
 
@@ -345,6 +370,7 @@ knitr::include_graphics("submission/Figure_3.jpg")
 
 ```{r}
 mod <- lm(peso_raices ~ tratamiento, data = desarrollo)
+anova(mod)
 
 # Residuales Estandarizados
 
@@ -355,11 +381,56 @@ sort(ri)
 
 shapiro.test(ri)
 
+# Test de Barlett (homogeneidad de varianzas)
+
+bartlett.test(peso_raices ~ tratamiento, desarrollo)
+
+# Test de Levene
+
+leveneTest(peso_raices ~ tratamiento, desarrollo)
+
+# Breusch - Pagan Test
+
+library(lmtest)
+bptest(mod)
+
+trait <- "peso_raices"
+
+lmm <- paste({{trait}}, "~ 1 + (1|tratamiento)") %>% as.formula()
+
+lmd <- paste({{trait}}, "~ tratamiento") %>% as.formula()
+
+rmout <- desarrollo %>% 
+  remove_outliers(formula = lmm
+                  , drop_na = T, plot_diag = T)
+
+rmout$diagplot
+
+rmout$outliers
+
+model <- rmout$data$clean %>% 
+  aov(formula = lmd, .)
+
+anova(model)
+
+mode <- aov(mod)
+
+mc <- emmeans(model, ~ tratamiento) %>%
+  cld(Letters = letters, reversed = F) %>%
+  mutate(across(.group, trimws)) %>% 
+  rename(group = ".group")
+
+TukeyHSD(model,conf.level = 0.95)
+SNK.test(model,"tratamiento", console = T)
+duncan.test(model, "tratamiento", group=F)$comparison
+LSD.test(y=model, trt = "tratamiento",group = T, console = T)
+
 # Kruskal-Wallis
 
 attach(desarrollo)
 
 kruskal_result <- kruskal(peso_raices, tratamiento, group = TRUE, p.adj = "none")
+kruskal.test(peso_raices ~ tratamiento, data = desarrollo)
 
 kruskal_result
 
