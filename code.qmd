@@ -63,14 +63,12 @@ glimpse(enraizamiento)
 
 desarrollo <- gs %>% 
   range_read("desarrollo") %>% 
-  mutate_at("tratamiento", as.factor)
-
-glimpse(desarrollo)
-
-desarrollo$peso_raices[desarrollo$peso_raices == 0] <- NA
+  mutate_at("tratamiento", as.factor) %>%
+  mutate(across(everything(), ~ replace(., . == 0, NA)))
 
 colSums(is.na(desarrollo))
 
+glimpse(desarrollo)
 ```
 
 ```{r}
@@ -100,12 +98,6 @@ desarrollo %>%
   group_by(tratamiento) %>%
   summarise(max = max(peso_raices, na.rm = T), min = min(peso_raices, na.rm = T), 
             mean = mean(peso_raices, na.rm = T), median = median(peso_raices, na.rm = T))
-
-colSums(desarrollo == 0)
-
-count <- desarrollo %>% 
-  arrange(peso_raices)
-
 ```
 
 # Objetives
@@ -168,44 +160,6 @@ Determine the effect of the rootstock-interstock interaction on the agronomic ch
 ### Numero de raices
 
 ```{r}
-mod <- lm(numero_raices ~ tratamiento, data = desarrollo)
-anova(mod)
-
-# Residuales Estandarizados
-
-ri <- rstandard(mod)
-sort(ri)
-
-# Normalidad
-
-shapiro.test(ri)
-
-# Test de Barlett (homogeneidad de varianzas)
-
-bartlett.test(numero_raices ~ tratamiento, desarrollo)
-
-# Test de Levene
-
-leveneTest(numero_raices ~ tratamiento, desarrollo)
-
-# Kruskal-Wallis
-
-# kruskal_result <- kruskal(numero_raices, tratamiento, group = TRUE, p.adj = "none")
-# 
-# kruskal_result
-# 
-# Kruskal_groups <- kruskal_result$groups %>% 
-#   rownames_to_column("tratamientos") %>% 
-#   arrange(tratamientos)
-# 
-# Kruskal_groups <- kruskal_result$groups %>% 
-#   rownames_to_column("tratamientos") %>% 
-#   arrange(tratamientos)
-# 
-# Kruskal_means <- kruskal_result$means %>% 
-#   rownames_to_column("tratamientos") %>% 
-#   arrange(tratamientos)
-
 trait <- "numero_raices"
 
 lmm <- paste({{trait}}, "~ 1 + (1|tratamiento)") %>% as.formula()
@@ -223,32 +177,35 @@ rmout$outliers
 model <- rmout$data$clean %>% 
   aov(formula = lmd, .)
 
-mode <- aov(mod)
+anova(model)
 
-mc <- emmeans(model, ~ tratamiento) %>%
-  cld(Letters = letters, reversed = F) %>%
-  mutate(across(.group, trimws)) %>% 
-  rename(group = ".group")
+lsd <- LSD.test(y=model, trt = "tratamiento",group = T, console = T)
 
-tratamiento
-SNK.test(mode,"tratamiento", console = T)
-
+lsd$means %>% kable()
+lsd$groups %>% kable(align = 'c')
 ```
 
-### Tabla 1
+### Table 1
 
 ```{r}
-tab <- left_join(Kruskal_means,Kruskal_groups, by = "tratamientos") %>% 
-  select(tratamientos, numero_raices.x, std, Min, Max, rank, groups) %>% 
+lsd_means <- lsd$means %>%
+  rownames_to_column("tratamientos") %>%
+  arrange(tratamientos)
+
+lsd_groups <- lsd$groups %>%
+  rownames_to_column("tratamientos") %>%
+  arrange(tratamientos)
+
+tab <- left_join(lsd_means,lsd_groups, by = "tratamientos") %>% 
+  select(tratamientos, numero_raices.x, std, se, Min, Max, groups) %>% 
   mutate_if(is.numeric, round, 3) %>% 
-   unite("rank", c(rank, "groups"), remove = F, sep = " ") %>% 
-  select(-groups) %>% 
   rename(Tratamientos = tratamientos
-         ,Media = numero_raices.x
-         ,Mínimo = Min
-         ,Máximo = Max
-         ,Rango = rank
-         ,Desviación = std)
+         ,Mean = numero_raices.x
+         ,Minimum = Min
+         ,Maximum = Max
+         ,"Standard error" = se
+         ,"Standard desviation" = std
+         , Significance = groups)
  
 tab %>% kable(align = 'c')
 
@@ -258,44 +215,6 @@ tab %>% sheet_write(data = ., gs, "number_roots")
 ### Longitud de raices
 
 ```{r}
-mod <- lm(longitud_raices ~ tratamiento, data = desarrollo)
-anova(mod)
-
-# Residuales Estandarizados
-
-ri <- rstandard(mod)
-sort(ri)
-
-# Normalidad
-
-shapiro.test(ri)
-
-# Test de Barlett (homogeneidad de varianzas)
-
-bartlett.test(longitud_raices ~ tratamiento, desarrollo)
-
-# Test de Levene
-
-leveneTest(longitud_raices ~ tratamiento, desarrollo)
-
-# Breusch - Pagan Test
-
-library(lmtest)
-bptest(mod)
-
-# Kruskal-Wallis
-
-kruskal_result <- kruskal(longitud_raices, tratamiento, group = TRUE, p.adj = "none")
-
-kruskal.test(longitud_raices ~ tratamiento, data = desarrollo)
-
-pairwise.wilcox.test(x = longitud_raices, g = tratamiento, p.adjust.method = "bonferroni")
-
-comparison <- with(desarrollo,kruskal(longitud_raices,tratamiento,group=TRUE, main="desarrollo"))
-comparison <- with(desarrollo,kruskal(longitud_raices,tratamiento,p.adj="bon",group=FALSE, main="desarrollo"))
-
-##SNK test
-
 trait <- "longitud_raices"
 
 lmm <- paste({{trait}}, "~ 1 + (1|tratamiento)") %>% as.formula()
@@ -315,85 +234,33 @@ model <- rmout$data$clean %>%
 
 anova(model)
 
-mode <- aov(mod)
+lsd <- LSD.test(y=model, trt = "tratamiento",group = T, console = T)
 
-mc <- emmeans(model, ~ tratamiento) %>%
-  cld(Letters = letters, reversed = F) %>%
-  mutate(across(.group, trimws)) %>% 
-  rename(group = ".group")
+lsd$means %>% kable()
+lsd$groups %>% kable(align = 'c')
 
-TukeyHSD(model,conf.level = 0.95)
-SNK.test(model,"tratamiento", console = T)
-duncan.test(model, "tratamiento", group=F)$comparison
-LSD.test(y=model, trt = "tratamiento",group = T, console = T)
-
-
-kruskal_result
-
-Kruskal <- kruskal_result$groups %>% 
-  rownames_to_column("tratamientos") %>% 
-  arrange(tratamientos)
-
-fig <- ggplot(desarrollo, aes(x = tratamiento, y = longitud_raices, fill = tratamiento)) +
+fig1a <- ggplot(desarrollo, aes(x = tratamiento, y = longitud_raices, fill = tratamiento)) +
   stat_boxplot(geom = "errorbar", # Error bars
                width = 0.25) +
   geom_boxplot(width = 0.5)+
   scale_fill_grey() +
-  labs(x = "Tratamiento", y= "Longitud de raíces (cm)")+
-   scale_x_discrete(labels = c("T0" = "T0:0 ppm", "T1" = "T1:1000 ppm", "T2" = "T2:1500 ppm", 
-                              "T3" = "T3:2000 ppm", "T4" = "T4: Comercial")) +
+  labs(x = "Treatment", y= "Root length (cm)")+
+   scale_x_discrete(labels = c("T0" = "0 ppm IBA", "T1" = "1000 ppm IBA", "T2" = "1500 ppm IBA", 
+                              "T3" = "2000 ppm IBA", "T4" = "4000 ppm NNA + 1000 ppm IBA")) +
   theme_minimal() +
-  theme(axis.title.x = element_text(color = "black", size = 12), 
-        axis.title.y = element_text(color = "black", size = 12)) +
+  # theme(axis.title.x = element_text(color = "black", size = 12), 
+  #       axis.title.y = element_text(color = "black", size = 12)) +
   annotate(geom = "text", x = c(1,2,3,4,5), y = c(6.5,13.5,22.5,17.5,18),
            label = c("b","b","ab","ab","a"), size = 3.5) +
+  scale_y_continuous(limits = c(0,25)) +
   guides(fill = F)
 
-fig %>% 
-  ggsave2(plot = ., "submission/Figure_3.jpg"
-         , units = "cm"
-         , width = 20
-         , height = 15
-         )
-
-fig %>% 
-  ggsave2(plot = ., "submission/Figure_3.eps"
-         , units = "cm"
-         , width = 20
-         , height = 15
-         )
-
-knitr::include_graphics("submission/Figure_3.jpg")
+fig1a
 ```
 
 ### Peso de raices
 
 ```{r}
-mod <- lm(peso_raices ~ tratamiento, data = desarrollo)
-anova(mod)
-
-# Residuales Estandarizados
-
-ri <- rstandard(mod)
-sort(ri)
-
-# Normalidad
-
-shapiro.test(ri)
-
-# Test de Barlett (homogeneidad de varianzas)
-
-bartlett.test(peso_raices ~ tratamiento, desarrollo)
-
-# Test de Levene
-
-leveneTest(peso_raices ~ tratamiento, desarrollo)
-
-# Breusch - Pagan Test
-
-library(lmtest)
-bptest(mod)
-
 trait <- "peso_raices"
 
 lmm <- paste({{trait}}, "~ 1 + (1|tratamiento)") %>% as.formula()
@@ -413,61 +280,119 @@ model <- rmout$data$clean %>%
 
 anova(model)
 
-mode <- aov(mod)
+lsd <- LSD.test(y=model, trt = "tratamiento",group = T, console = T)
 
-mc <- emmeans(model, ~ tratamiento) %>%
-  cld(Letters = letters, reversed = F) %>%
-  mutate(across(.group, trimws)) %>% 
-  rename(group = ".group")
+lsd$means %>% kable()
+lsd$groups %>% kable(align = 'c')
 
-TukeyHSD(model,conf.level = 0.95)
-SNK.test(model,"tratamiento", console = T)
-duncan.test(model, "tratamiento", group=F)$comparison
-LSD.test(y=model, trt = "tratamiento",group = T, console = T)
-
-# Kruskal-Wallis
-
-attach(desarrollo)
-
-kruskal_result <- kruskal(peso_raices, tratamiento, group = TRUE, p.adj = "none")
-kruskal.test(peso_raices ~ tratamiento, data = desarrollo)
-
-kruskal_result
-
-Kruskal <- kruskal_result$groups %>% 
-  rownames_to_column("tratamientos") %>% 
-  arrange(tratamientos)
-
-fig <- desarrollo %>% 
+fig1b <- desarrollo %>% 
   mutate(peso_mg = peso_raices*1000) %>% 
   ggplot(aes(x = tratamiento, y = peso_mg, fill = tratamiento)) +
   stat_boxplot(geom = "errorbar", # Error bars
                width = 0.25) +
   geom_boxplot(width = 0.5)+
   scale_fill_grey() +
-  labs(x = "Tratamiento", y= "Peso seco de raíces (mg)")+
-  scale_x_discrete(labels = c("T0" = "T0:0 ppm", "T1" = "T1:1000 ppm", "T2" = "T2:1500 ppm", 
-                              "T3" = "T3:2000 ppm", "T4" = "T4: Comercial")) +
+  labs(x = "Treatment", y= "Dry weight of roots (mg)")+
+  scale_x_discrete(labels = c("T0" = "0 ppm IBA", "T1" = "1000 ppm IBA", "T2" = "1500 ppm IBA", 
+                              "T3" = "2000 ppm IBA", "T4" = "4000 ppm NNA + 1000 ppm IBA")) +
   theme_minimal() +
-  theme(axis.title.x = element_text(color = "black", size = 12), 
-        axis.title.y = element_text(color = "black", size = 12)) +
+  # theme(axis.title.x = element_text(color = "black", size = 12), 
+  #       axis.title.y = element_text(color = "black", size = 12)) +
   annotate(geom = "text", x = c(1,2,3,4,5), y = c(15,21,30,30,34),
-           label = c("a","ab","a","ab","ab"), size = 3.5) +
+           label = c("b","b","a","b","a"), size = 3.5) +
+  scale_y_continuous(limits = c(0,35)) +
   guides(fill = F)
 
-fig %>% 
-  ggsave2(plot = ., "submission/Figure_4.jpg"
+fig1b
+```
+
+### Figure 1
+
+Univariate analysis of the variables that determine the agronomic characteristics of mango.
+
+```{r}
+p1 <- list(fig1a + labs(x = NULL) + theme(legend.position="none"
+                                        , axis.title.x=element_blank()
+                                        , axis.text.x=element_blank()
+                                        , axis.ticks.x=element_blank())
+           , fig1b + theme(legend.position="none")
+           ) %>% 
+  plot_grid(plotlist = ., ncol = 1
+            , labels = c("a", "b")
+            ) 
+
+plot <- plot_grid(p1, ncol = 1, align = 'v', rel_heights = c(0.05, 1))
+
+plot %>% 
+  ggsave2(plot = ., "submission/Figure_1.jpg"
          , units = "cm"
-         , width = 20
-         , height = 15
+         , width = 24
+         , height = 16
          )
 
 fig %>% 
-  ggsave2(plot = ., "submission/Figure_4.eps"
+  ggsave2(plot = ., "submission/Figure_1.eps"
          , units = "cm"
-         , width = 20
-         , height = 15
+         , width = 24
+         , height = 16
          )
+
+knitr::include_graphics("submission/Figure_1.jpg")
+```
+
+### Multivariate
+
+Principal Component Analysis (PCA) of agronomic traits in the mango crop based on the use of rootstock-interstock combinations.
+
+```{r}
+mv <- rdt %>% 
+  group_by(stock, edge) %>% 
+  summarise(across(where(is.numeric), ~ mean(., na.rm = T))) %>%   
+  unite("treat", stock:edge, sep = "-") %>% 
+   rename(Treat = treat
+         , Height = height
+         , Fruits = n_fruits
+         , Flowering = flowering
+         , Sproud = sproud)
+  
+pca <- mv %>% 
+  PCA(scale.unit = T, quali.sup = 1, graph = F) 
+
+# summary
+
+summary(pca, nbelements = Inf, nb.dec = 2)
+
+f2a <- plot.PCA(x = pca, choix = "var"
+                , cex=0.8
+                , label = "var"
+                )
+
+f2b <- plot.PCA(x = pca, choix = "ind"
+                , habillage = 1
+                , invisible = c("ind")
+                , cex=0.8
+                ) 
+```
+
+### Figure 4
+
+Principal Component Analysis (PCA).
+
+```{r}
+fig <- list(f2a, f2b) %>% 
+  plot_grid(plotlist = ., ncol = 2, nrow = 1
+            , labels = "auto"
+            , rel_widths = c(1, 1.5)
+            ) 
+fig %>% 
+  ggsave2(plot = ., "submission/Figure_4.jpg", units = "cm"
+          , width = 25, height = 10
+          ) 
+
+fig %>% 
+  ggsave2(plot = ., "submission/Figure_4.eps", units = "cm"
+          , width = 25, height = 10
+          ) 
 
 knitr::include_graphics("submission/Figure_4.jpg")
 ```
