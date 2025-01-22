@@ -117,7 +117,11 @@ enraizamiento %>%
   pivot_wider(names_from = enraizamiento, values_from = cantidad, values_fill = 0) %>% 
   rename(Tratamiento = tratamiento) %>% 
   kable(caption = "Numero de estaquillas enraizadas por tratamiento", align = 'c')
+```
 
+### Figure 2
+
+```{r}
 fig <- enraizamiento %>% 
    group_by(tratamiento) %>% 
   count(enraizamiento) %>% 
@@ -306,7 +310,7 @@ fig1b <- desarrollo %>%
 fig1b
 ```
 
-### Figure 1
+### Figure 3
 
 Univariate analysis of the variables that determine the agronomic characteristics of mango.
 
@@ -324,14 +328,14 @@ p1 <- list(fig1a + labs(x = NULL) + theme(legend.position="none"
 plot <- plot_grid(p1, ncol = 1, align = 'v', rel_heights = c(0.05, 1))
 
 plot %>% 
-  ggsave2(plot = ., "submission/Figure_1.jpg"
+  ggsave2(plot = ., "submission/Figure_3.jpg"
          , units = "cm"
          , width = 24
          , height = 16
          )
 
-fig %>% 
-  ggsave2(plot = ., "submission/Figure_1.eps"
+plot %>% 
+  ggsave2(plot = ., "submission/Figure_3.eps"
          , units = "cm"
          , width = 24
          , height = 16
@@ -345,15 +349,20 @@ knitr::include_graphics("submission/Figure_1.jpg")
 Principal Component Analysis (PCA) of agronomic traits in the mango crop based on the use of rootstock-interstock combinations.
 
 ```{r}
-mv <- rdt %>% 
-  group_by(stock, edge) %>% 
-  summarise(across(where(is.numeric), ~ mean(., na.rm = T))) %>%   
-  unite("treat", stock:edge, sep = "-") %>% 
-   rename(Treat = treat
-         , Height = height
-         , Fruits = n_fruits
-         , Flowering = flowering
-         , Sproud = sproud)
+mv <- desarrollo %>% 
+  group_by(tratamiento) %>% 
+  summarise(across(where(is.numeric), ~ mean(., na.rm = T))) %>% 
+  mutate(tratamiento = case_when(
+    tratamiento == "T0" ~ "0 ppm IBA",
+    tratamiento == "T1" ~ "1000 ppm IBA",
+    tratamiento == "T2" ~ "1500 ppm IBA",
+    tratamiento == "T3" ~ "2000 ppm IBA",
+    tratamiento == "T4" ~ "4000 ppm NAA + 1000 ppm IBA"
+  )) %>% 
+   rename(Treat = tratamiento
+         , "Root number" = numero_raices
+         , "Root length" = longitud_raices
+         , "Root weight" = peso_raices)
   
 pca <- mv %>% 
   PCA(scale.unit = T, quali.sup = 1, graph = F) 
@@ -362,15 +371,16 @@ pca <- mv %>%
 
 summary(pca, nbelements = Inf, nb.dec = 2)
 
-f2a <- plot.PCA(x = pca, choix = "var"
+f4a <- plot.PCA(x = pca, choix = "var"
                 , cex=0.8
                 , label = "var"
                 )
 
-f2b <- plot.PCA(x = pca, choix = "ind"
+f4b <- plot.PCA(x = pca, choix = "ind"
                 , habillage = 1
                 , invisible = c("ind")
                 , cex=0.8
+                , ylim = c(-2,2)
                 ) 
 ```
 
@@ -379,10 +389,10 @@ f2b <- plot.PCA(x = pca, choix = "ind"
 Principal Component Analysis (PCA).
 
 ```{r}
-fig <- list(f2a, f2b) %>% 
+fig <- list(f4a, f4b) %>% 
   plot_grid(plotlist = ., ncol = 2, nrow = 1
             , labels = "auto"
-            , rel_widths = c(1, 1.5)
+            , rel_widths = c(1, 1.3)
             ) 
 fig %>% 
   ggsave2(plot = ., "submission/Figure_4.jpg", units = "cm"
@@ -396,4 +406,3 @@ fig %>%
 
 knitr::include_graphics("submission/Figure_4.jpg")
 ```
-
