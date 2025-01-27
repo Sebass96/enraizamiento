@@ -1,5 +1,6 @@
 ---
-title: "Enraizamiento de estaquillas de Eucalyptus grandis × urophylla en invernadero, aplicando ácido indolbutírico, Satipo, Perú"
+title: "Eficiencia del ácido indolbutírico en la propagación clonal de _Eucalyptus grandis x urophylla_, Satipo, Perú
+"
 format:
   html:
     toc: true
@@ -43,7 +44,7 @@ session_info()
 
 # Import data
 
-Data were imported from the field book evaluated during the 2017-2019 growing seasons. The evaluations focused on the agronomic traits and fruit biometrics of the mango crop.
+The data were imported from the field book evaluated during the experiment period. The evaluations focused on rooting and root development of *Eucalyptus grandis x urophylla* cuttings.
 
 ```{r}
 url <- "https://docs.google.com/spreadsheets/d/15-PRXNgdVA0oG6L38PiJswQIOmAeEiDButT7UhuZDQA/edit?gid=904480992#gid=904480992"
@@ -102,11 +103,11 @@ desarrollo %>%
 
 # Objetives
 
-Evaluate the effect of the rootstock-interstock interaction on the agronomic traits and fruit biometrics of the mango crop in the San Lorenzo Valley.
+Evaluate the influence of indole butyric acid (IBA) on the rooting and root development of *Eucalyptus grandis x urophylla* cuttings.
 
 ## Specific Objective 1
 
-Determine the effect of the rootstock-interstock interaction on the agronomic characteristics of mango.
+Determine the effect of indolebutyric acid (IBA) on the rooting of *Eucalyptus grandis x urophylla* cuttings.
 
 ### Enraizamiento
 
@@ -159,7 +160,7 @@ knitr::include_graphics("submission/Figure_2.jpg")
 
 ## Specific Objective 2
 
-Determine the effect of the rootstock-interstock interaction on the agronomic characteristics of mango.
+Determine the effect of indolebutyric acid (IBA) on the root development of *Eucalyptus grandis x urophylla* cuttings.
 
 ### Numero de raices
 
@@ -312,7 +313,7 @@ fig1b
 
 ### Figure 3
 
-Univariate analysis of the variables that determine the agronomic characteristics of mango.
+Univariate analysis of the variables that determine the root development of cuttings of *Eucalyptus grandis x urophylla*.
 
 ```{r}
 p1 <- list(fig1a + labs(x = NULL) + theme(legend.position="none"
@@ -346,7 +347,7 @@ knitr::include_graphics("submission/Figure_1.jpg")
 
 ### Multivariate
 
-Principal Component Analysis (PCA) of agronomic traits in the mango crop based on the use of rootstock-interstock combinations.
+Principal Component Analysis (PCA) of the variables that determine the root development of cuttings of *Eucalyptus grandis x urophylla*.
 
 ```{r}
 mv <- desarrollo %>% 
