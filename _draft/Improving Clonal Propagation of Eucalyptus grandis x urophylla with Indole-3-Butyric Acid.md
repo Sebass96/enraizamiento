@@ -83,7 +83,9 @@ Despite the high potential of these techniques, asexual propagation of commercia
 
 This study was conducted in the greenhouse of TEC FOREST S.A.C., located in the district of San Martín de Pangoa, province of Satipo, Junín region, Peru. The site is geographically positioned at 11° 25' 24.72" S, 74° 29' 17.20" W (-11.42353 S, -74.4881 W) at an altitude of 792 meters above sea level (m a.s.l.) ([Figure 1](?tab=t.0#bookmark=id.u031vacyq5va)). The mean temperature in the study area ranges between 19°C and 35°C. The precipitation regime is seasonal, with a rainy season from October to April and a dry season from May to September [(Servicio Nacional de Meteorología e Hidrología del Perú, 2024)](https://www.zotero.org/google-docs/?JHqz3B). Within the greenhouse, temperatures ranged from 25°C to 30°C, and the relative humidity varied between 60% and 70%.
 
+![Geographical location of the experimental research area of ​​the clonal propagation study of *Eucalyptus grandis × E. urophylla* with indole-3-butyric acid. Forest nursery of TEC FOREST S.A.C., San Martín de Pangoa district, Junín department, Peruvian central jungle.](img_0.jpg){#fig:id.u031vacyq5va}
 
+## 
 
 
 
@@ -127,6 +129,7 @@ To evaluate the influence of indole-3-butyric acid (IBA) on the rooting of *Euca
 
 
 
+![Status of *E. grandis × E. urophylla* cutting in response to the application of different concentrations of indole-3-butyric acid (IBA) at the end of the rooting period.](img_1.jpg){#fig:id.icu4u475za3w}
 
 Significance differences were observed in the rooted cuttings variable between the control treatment and those where rooting agents were applied. The commercial treatment (4000 ppm NAA + 1000 ppm IBA) showed the highest rooting percentage (69%), followed by the 1500 ppm IBA treatment, which reached 44%. Both treatments significantly outperformed the control, which recorded only 7% rooting. Among the IBA treatments, 1500 ppm exhibited a higher rooting percentage than 1000 ppm (19%) and 2000 ppm (29%).
 
@@ -141,15 +144,24 @@ To determine the optimal dose of indole-3-butyric acid (IBA) that maximizes root
 
 
 
+| **Treatments**          | **Mean**                | **Standard desviation** | **Minimum**             | **Maximum**             | **Significance**         |
+|-------------------------|-------------------------|-------------------------|-------------------------|-------------------------|--------------------------|
+| T0                      | 1.833                   | 0.753                   | 1                       | 3                       | a                        |
+| T1                      | 2.176                   | 1.131                   | 1                       | 4                       | a                        |
+| T2                      | 2.200                   | 1.244                   | 1                       | 6                       | a                        |
+| T3                      | 2.192                   | 1.167                   | 1                       | 5                       | a                        |
+| T4                      | 2.274                   | 1.089                   | 1                       | 5                       | a                        |
 
 
 
 
+: Results of Fisher’s least significant difference (LSD) test for indole-3-butyric acid (IBA) dosage based on the number of roots variable. Groups are assigned according to mean difference probability (α = 0.05). Treatments with the same letter are not significantly different (p-value < 0.05, n = 151). {#tbl:id.qlqbpsrco9wo}
 
 The statistical analysis of the number of roots, conducted through ANOVA (α = 0.05), did not reveal significant differences among treatments (p = 0.92). However, trends suggest greater root development in treatments with IBA application, with up to six roots per cutting, compared to the control treatment (0 ppm IBA), which showed a maximum of three developed roots. Among the evaluated treatments, the commercial formulation (4000 ppm NAA + 1000 ppm IBA) recorded the highest mean, with 2.27 roots per cutting, while the control treatment had the lowest mean, with 1.83 roots. These results indicate a potentially positive effect of the NAA and IBA combination on root development promotion, although no statistically significant differences were observed in this case. ([Table 1](?tab=t.0#bookmark=id.qlqbpsrco9wo)).
 
 
 
+![Root development of *Eucalyptus grandis × E. urophylla* cuttings for each applied dose of indole-3-butyric acid (IBA) at the end of the rhizogenesis process. (a) Root length (cm) (b) Root dry weight (mg). Results of Fisher’s least significant difference (LSD) test. Groups are assigned according to mean difference probability (α = 0.05). Treatments with the same letter are not significantly different (p-value < 0.05, n = 151).](img_2.jpg){#fig:id.6ze9vl8bgddo}
 
 The statistical analysis of root length, conducted through ANOVA (α = 0.05), showed significant differences among treatments (p = 0.11). The results indicated that the control treatment (0 ppm IBA) and the 1000 ppm IBA treatment had the lowest mean root lengths, measuring 3.43 cm and 4.10 cm, respectively. In contrast, the commercial treatment (4000 ppm NAA + 1000 ppm IBA) recorded the highest mean root length, reaching 6.92 cm. Additionally, while the maximum value observed in the control treatment was 5.00 cm, the hormone-treated cuttings developed roots up to 19.00 cm in length. However, most roots observed in this study measured between 1.00 cm and 10.00 cm, suggesting a general trend toward the development of short roots under the experimental conditions.
 
@@ -157,6 +169,7 @@ On the other hand, the analysis of root dry weight, also conducted through ANOVA
 
 To analyze the overall interaction between variables and IBA concentrations, a principal component analysis (PCA) was performed ([Figure 4](?tab=t.0#bookmark=id.lown5jg4j2wr)).
 
+![Principal Component Analysis (PCA) of root development variables based on the application of different doses of indole-3-butyric acid (IBA). (a) Evaluation of variables to determine the effect of the growth regulator on root system characteristics. (b) Treatment grouping based on IBA concentrations to identify the optimal dose for maximizing root development. The analysis was conducted on 151 observations (n = 151).](img_3.jpg){#fig:id.lown5jg4j2wr}
 
 To evaluate the interaction among variables, a principal component analysis (PCA) was performed. The first two components explained 96.13% of the total variance, with Dimension 1 accounting for 82.01% and Dimension 2 for 14.12% of the variance ([Figure 4](?tab=t.0#bookmark=id.lown5jg4j2wr)a). In Dimension 1, root length had the highest contribution (37.70%), followed by number of roots (31.41%) and root dry weight (30.89%). In Dimension 2, root dry weight (51.95%) and number of roots (48.01%) were the predominant contributors, whereas root length had a minimal contribution of 0.04%.
 
@@ -268,51 +281,3 @@ The application of indole-3-butyric acid (IBA) had a significant impact on the r
 
 [Zeng, Y., Wu, H., Ouyang, S., Chen, L., Fang, X., Peng, C., Liu, S., Xiao, W., & Xiang, W. (2021). Ecosystem service multifunctionality of Chinese fir plantations differing in stand age and implications for sustainable management. *Science of The Total Environment*, *788*, 147791. [https://doi.org/10.1016/j.scitotenv.2021.147791](https://doi.org/10.1016/j.scitotenv.2021.147791)​](https://www.zotero.org/google-docs/?uviWq0)
 
-\newpage
-```{r}
-#| label: fig-id.u031vacyq5va
-#| fig-cap: "Geographical location of the experimental research area of ​​the clonal propagation study of *Eucalyptus grandis × E. urophylla* with indole-3-butyric acid. Forest nursery of TEC FOREST S.A.C., San Martín de Pangoa district, Junín department, Peruvian central jungle."
-
-knitr::include_graphics("_draft/img_0.jpg")
-```
-\newpage
-```{r}
-#| label: fig-id.icu4u475za3w
-#| fig-cap: "Status of *E. grandis × E. urophylla* cutting in response to the application of different concentrations of indole-3-butyric acid (IBA) at the end of the rooting period."
-
-knitr::include_graphics("_draft/img_1.jpg")
-```
-\newpage
-```{r}
-#| label: fig-id.6ze9vl8bgddo
-#| fig-cap: "Root development of *Eucalyptus grandis × E. urophylla* cuttings for each applied dose of indole-3-butyric acid (IBA) at the end of the rhizogenesis process. (a) Root length (cm) (b) Root dry weight (mg). Results of Fisher’s least significant difference (LSD) test. Groups are assigned according to mean difference probability (α = 0.05). Treatments with the same letter are not significantly different (p-value < 0.05, n = 151)."
-
-knitr::include_graphics("_draft/img_2.jpg")
-```
-\newpage
-```{r}
-#| label: fig-id.lown5jg4j2wr
-#| fig-cap: "Principal Component Analysis (PCA) of root development variables based on the application of different doses of indole-3-butyric acid (IBA). (a) Evaluation of variables to determine the effect of the growth regulator on root system characteristics. (b) Treatment grouping based on IBA concentrations to identify the optimal dose for maximizing root development. The analysis was conducted on 151 observations (n = 151)."
-
-knitr::include_graphics("_draft/img_3.jpg")
-```
-\newpage
-```{r}
-#| label: tbl-id.qlqbpsrco9wo
-#| tbl-cap: "Results of Fisher’s least significant difference (LSD) test for indole-3-butyric acid (IBA) dosage based on the number of roots variable. Groups are assigned according to mean difference probability (α = 0.05). Treatments with the same letter are not significantly different (p-value < 0.05, n = 151)."
-knitr::kable(tibble::tibble(' ' = ''))
-```
-| **Treatments**          | **Mean**                | **Standard desviation** | **Minimum**             | **Maximum**             | **Significance**         |
-|-------------------------|-------------------------|-------------------------|-------------------------|-------------------------|--------------------------|
-| T0                      | 1.833                   | 0.753                   | 1                       | 3                       | a                        |
-| T1                      | 2.176                   | 1.131                   | 1                       | 4                       | a                        |
-| T2                      | 2.200                   | 1.244                   | 1                       | 6                       | a                        |
-| T3                      | 2.192                   | 1.167                   | 1                       | 5                       | a                        |
-| T4                      | 2.274                   | 1.089                   | 1                       | 5                       | a                        |
-\newpage
-\newpage
-\newpage
-\newpage
-\newpage
-\newpage
-\newpage
