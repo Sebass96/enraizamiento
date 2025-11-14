@@ -1,6 +1,5 @@
 ---
 title: "Eficiencia del ácido indolbutírico en la propagación clonal de Eucalyptus grandis x urophylla, Satipo, Perú
-"
 format:
   html:
     toc: true
