@@ -1,5 +1,9 @@
 ---
+<<<<<<< HEAD
 title: "Eficiencia del ácido indolbutírico en la propagación clonal de Eucalyptus grandis x urophylla, Satipo, Perú
+=======
+title: "Improving Clonal Propagation of Eucalyptus grandis x urophylla with Indole-3-Butyric Acid"
+>>>>>>> d2d8f819e92ac228b9b81586699bc865a384573a
 format:
   html:
     toc: true
