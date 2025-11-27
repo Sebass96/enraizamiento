@@ -1,9 +1,5 @@
 ---
-<<<<<<< HEAD
-title: "Eficiencia del ácido indolbutírico en la propagación clonal de Eucalyptus grandis x urophylla, Satipo, Perú
-=======
-title: "Improving Clonal Propagation of Eucalyptus grandis x urophylla with Indole-3-Butyric Acid"
->>>>>>> d2d8f819e92ac228b9b81586699bc865a384573a
+title: "Improving Clonal Propagation of _Eucalyptus grandis x urophylla_ with Indole-3-Butyric Acid"
 format:
   html:
     toc: true
@@ -20,16 +16,6 @@ execute:
 
 # Project Setup
 
-Install *inti* development version.
-
-```{r}
-#| eval: false
-
-if (!require("remotes"))
-  install.packages("remotes")
-remotes::install_github("flavjack/inti")
-```
-
 ```{r}
 #| label:  setup
 
@@ -39,8 +25,10 @@ library(ggthemes)
 library(agricolae)
 library(multcomp)
 library(car)
-source('https://inkaverse.com/setup.r')
+library(nnet)
+source("https://inkaverse.com/setup.r")
 
+set.seed(2025)
 cat("Project: ", getwd(), "\n")
 session_info()
 ```
@@ -125,32 +113,123 @@ enraizamiento %>%
   kable(caption = "Numero de estaquillas enraizadas por tratamiento", align = 'c')
 ```
 
+```{r}
+df <- data.frame(
+  Tratamiento = factor(c("T0","T1","T2","T3","T4")),
+  Enraizada   = c(6,17,40,26,62),
+  Callo       = c(13,27,31,27,22),
+  Muerta      = c(71,46,19,37,6)
+)
+
+df <- df %>%
+  mutate(Total = Enraizada + Callo + Muerta)
+
+
+df$NoEnraizada <- df$Total - df$Enraizada
+
+mod_enraizada <- glm(
+  cbind(Enraizada, NoEnraizada) ~ Tratamiento,
+  family = binomial(link = "logit"),
+  data = df
+)
+
+mc_enraizada <- emmeans(mod_enraizada, ~ Tratamiento, type = "response") %>%
+  cld(Letters = letters, reversed = T)
+
+anova(mod_enraizada, test = "Chisq")
+
+df$NoCallo <- df$Total - df$Callo
+
+mod_callo <- glm(
+  cbind(Callo, NoCallo) ~ Tratamiento,
+  family = binomial(link = "logit"),
+  data = df
+)
+
+mc_callo <- emmeans(mod_callo , ~ Tratamiento, type = "response") %>%
+  cld(Letters = letters, reversed = T)
+
+anova(mod_callo , test = "Chisq")
+
+df$NoMuerta <- df$Total - df$Muerta
+
+mod_muerta <- glm(
+  cbind(Muerta, NoMuerta) ~ Tratamiento,
+  family = binomial(link = "logit"),
+  data = df
+)
+
+mc_muerta <- emmeans(mod_muerta , ~ Tratamiento, type = "response") %>%
+  cld(Letters = letters, reversed = F)
+
+anova(mod_muerta, test = "Chisq")
+
+letters_enraizada <- mc_enraizada %>%
+  as.data.frame() %>%
+  select(Tratamiento, letra_enraizada = .group)
+
+letters_callo <- mc_callo %>%
+  as.data.frame() %>%
+  select(Tratamiento, letra_callo = .group)
+
+letters_muerta <- mc_muerta %>%
+  as.data.frame() %>%
+  select(Tratamiento, letra_muerta = .group)
+
+df_plot <- enraizamiento %>%
+  group_by(tratamiento) %>%
+  count(enraizamiento) %>%
+  mutate(percent = round((n*100/90),0)) %>%
+  left_join(letters_enraizada,  by = c("tratamiento" = "Tratamiento")) %>%
+  left_join(letters_callo,      by = c("tratamiento" = "Tratamiento")) %>%
+  left_join(letters_muerta,     by = c("tratamiento" = "Tratamiento"))
+
+
+df_plot <- df_plot %>%
+  mutate(
+    letra = case_when(
+      enraizamiento == "Enraizada" ~ letra_enraizada,
+      enraizamiento == "Callo"     ~ letra_callo,
+      enraizamiento == "Muerta"    ~ letra_muerta
+    )
+  )
+
+```
+
+
+
 ### Figure 2
 
 ```{r}
-fig <- enraizamiento %>% 
-   group_by(tratamiento) %>% 
-  count(enraizamiento) %>% 
-  mutate(percent = round((n*100/90),0)) %>% 
+fig <- df_plot %>% 
   ggplot(aes(x = tratamiento, y = percent, fill = enraizamiento)) +
-  geom_col(position = "dodge", size = 0.7, color = "black") +
-  scale_fill_grey(labels = c("Rooted","Callused","Dead"), start = 0.8, end = 0.2) +
-  scale_x_discrete(labels = c("T0" = "0 ppm IBA", "T1" = "1000 ppm IBA", "T2" = "1500 ppm IBA", 
-                              "T3" = "2000 ppm IBA", "T4" = "4000 ppm NNA + 1000 ppm IBA")) +
-  scale_y_continuous(limits = c(0,80)) +
-  labs(x = "Treatment", y= "Cuttings percentage (%)") +
-  theme_minimal() +
-  labs(fill = "Cuttings") +
-  # theme(axis.title.x = element_text(color = "black", size = 12),
-  #       axis.title.y = element_text(color = "black", size = 12))+
-  geom_text(aes(label = paste0(percent, "%")), vjust= -0.5, position = position_dodge(0.9)) +
+  geom_col(position = position_dodge(0.9), size = 0.7, color = "black") +
+  geom_text(aes(label = paste0(percent, "%")),
+            vjust = -0.5,
+            position = position_dodge(0.9)) +
+  geom_text(aes(label = letra, y = percent + 6),
+            # fontface = "bold",
+            position = position_dodge(0.9)) +
+  scale_fill_grey(labels = c("Rooted","Callused","Dead"),
+                  start = 0.8, end = 0.2) +
+  scale_x_discrete(labels = c(
+    "T0" = "0 ppm IBA", 
+    "T1" = "1000 ppm IBA", 
+    "T2" = "1500 ppm IBA", 
+    "T3" = "2000 ppm IBA", 
+    "T4" = "4000 ppm NNA + 1000 ppm IBA"
+  )) +
+  scale_y_continuous(limits = c(0, 90)) +
+  labs(x = "Treatment", y = "Cuttings percentage (%)", fill = "Cuttings") +
+  theme_minimal(base_size = 16) +
   theme(legend.position = "top")
 
 fig %>% 
-  ggsave(plot = ., "submission/Figure_2.jpg"
+  ggsave2(plot = ., "submission/Figure_2.jpg"
          , units = "cm"
-         , width = 24
-         , height = 16
+         , width = 30
+         , height = 22
+         , dpi = 600
          )
 
 fig %>% 
@@ -257,11 +336,11 @@ fig1a <- ggplot(desarrollo, aes(x = tratamiento, y = longitud_raices, fill = tra
   labs(x = "Treatment", y= "Root length (cm)")+
    scale_x_discrete(labels = c("T0" = "0 ppm IBA", "T1" = "1000 ppm IBA", "T2" = "1500 ppm IBA", 
                               "T3" = "2000 ppm IBA", "T4" = "4000 ppm NNA + 1000 ppm IBA")) +
-  theme_minimal() +
+  theme_minimal(base_size = 16) +
   # theme(axis.title.x = element_text(color = "black", size = 12), 
   #       axis.title.y = element_text(color = "black", size = 12)) +
   annotate(geom = "text", x = c(1,2,3,4,5), y = c(6.5,13.5,22.5,17.5,18),
-           label = c("b","b","ab","ab","a"), size = 3.5) +
+           label = c("b","b","ab","ab","a"), size = 5) +
   scale_y_continuous(limits = c(0,25)) +
   guides(fill = F)
 
@@ -305,11 +384,11 @@ fig1b <- desarrollo %>%
   labs(x = "Treatment", y= "Dry weight of roots (mg)")+
   scale_x_discrete(labels = c("T0" = "0 ppm IBA", "T1" = "1000 ppm IBA", "T2" = "1500 ppm IBA", 
                               "T3" = "2000 ppm IBA", "T4" = "4000 ppm NNA + 1000 ppm IBA")) +
-  theme_minimal() +
+  theme_minimal(base_size = 16) +
   # theme(axis.title.x = element_text(color = "black", size = 12), 
   #       axis.title.y = element_text(color = "black", size = 12)) +
   annotate(geom = "text", x = c(1,2,3,4,5), y = c(15,21,30,30,34),
-           label = c("b","b","a","b","a"), size = 3.5) +
+           label = c("b","b","a","b","a"), size = 5) +
   scale_y_continuous(limits = c(0,35)) +
   guides(fill = F)
 
@@ -336,8 +415,9 @@ plot <- plot_grid(p1, ncol = 1, align = 'v', rel_heights = c(0.05, 1))
 plot %>% 
   ggsave2(plot = ., "submission/Figure_3.jpg"
          , units = "cm"
-         , width = 24
-         , height = 16
+         , width = 30
+         , height = 22
+         , dpi = 600
          )
 
 plot %>% 
